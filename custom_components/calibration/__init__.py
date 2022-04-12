@@ -2,13 +2,9 @@
 import logging
 
 import numpy as np
-from numpy.polynomial import Polynomial
 import voluptuous as vol
-
-from homeassistant.components.sensor import (
-    DEVICE_CLASSES_SCHEMA,
-    DOMAIN as SENSOR_DOMAIN,
-)
+from homeassistant.components.sensor import DEVICE_CLASSES_SCHEMA
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.const import (
     CONF_ATTRIBUTE,
     CONF_DEVICE_CLASS,
@@ -21,6 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.discovery import async_load_platform
 from homeassistant.helpers.typing import ConfigType
+from numpy.polynomial import Polynomial
 
 from .const import (
     CONF_CALIBRATION,
@@ -76,7 +73,7 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
-async def async_setup(hass: HomeAssistant, config: ConfigType):
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Calibration sensor."""
     hass.data[DATA_CALIBRATION] = {}
 

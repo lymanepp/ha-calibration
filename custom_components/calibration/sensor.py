@@ -16,10 +16,10 @@ from homeassistant.const import (
     CONF_UNIT_OF_MEASUREMENT,
     STATE_UNKNOWN,
 )
-from homeassistant.core import Event, HomeAssistant, callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, EventType
 
 from .const import (
     ATTR_COEFFICIENTS,
@@ -38,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_platform(
     hass: HomeAssistant,
-    config: ConfigType,
+    config: ConfigType,  # pylint: disable=unused-arg
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
@@ -51,20 +51,18 @@ async def async_setup_platform(
 
     unique_id = f"{DOMAIN}.{conf.get(CONF_UNIQUE_ID) or calibration}"
     name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
-    source = conf[CONF_SOURCE]
-    attribute = conf.get(CONF_ATTRIBUTE)
 
     async_add_entities(
         [
             CalibrationSensor(
                 unique_id,
                 name,
-                source,
-                attribute,
+                conf[CONF_SOURCE],
+                conf.get(CONF_ATTRIBUTE),
                 conf[CONF_PRECISION],
                 conf[CONF_POLYNOMIAL],
-                conf.get(CONF_DEVICE_CLASS),
                 conf.get(CONF_UNIT_OF_MEASUREMENT),
+                conf.get(CONF_DEVICE_CLASS),
             )
         ]
     )
@@ -81,20 +79,21 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
         attribute: str | None,
         precision: int,
         polynomial,
-        device_class: str,
-        unit_of_measurement: str,
-    ):  # pylint: disable=too-many-arguments
+        unit_of_measurement: str | None,
+        device_class: str | None,
+    ) -> None:
         """Initialize the Calibration sensor."""
         self._source_entity_id = source
-        self._precision = precision
         self._source_attribute = attribute
-        self._attr_native_unit_of_measurement = unit_of_measurement
+        self._precision = precision
         self._poly = polynomial
+
         self._attr_unique_id = unique_id
         self._attr_name = name
-        self._attr_should_poll = False
+        self._attr_native_unit_of_measurement = unit_of_measurement
         self._attr_device_class = device_class
         self._attr_icon = None
+        self._attr_should_poll = False
 
         attrs = {
             ATTR_SOURCE_VALUE: None,
@@ -117,7 +116,7 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
         )
 
     @callback
-    def _async_calibration_sensor_state_listener(self, event: Event) -> None:
+    def _async_calibration_sensor_state_listener(self, event: EventType) -> None:
         """Handle sensor state changes."""
         if (new_state := event.data.get("new_state")) is None:
             return

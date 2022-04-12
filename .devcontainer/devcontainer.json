@@ -4,7 +4,7 @@
 	"name": "calibration development",
 	"context": "..",
 	"appPort": [
-		"8123:8123"
+		"8124:8123"
 	],
 	"postCreateCommand": "container install",
 	"extensions": [

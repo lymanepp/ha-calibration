@@ -61,7 +61,7 @@ async def test_linear_state(hass: HomeAssistant, caplog: LogCaptureFixture):
     hass.states.async_set(entity_id, "foo", {})
     await hass.async_block_till_done()
 
-    assert "could not convert string to float: 'foo'" in caplog.text
+    assert "state is not numerical" in caplog.text
 
     state = hass.states.get(expected_entity_id)
     assert state is not None
@@ -155,27 +155,6 @@ async def test_quadratic_state(hass: HomeAssistant):
     assert state is not None
 
     assert round(float(state.state), config[DOMAIN]["test"][CONF_PRECISION]) == 3.327
-
-
-async def test_numpy_errors(hass: HomeAssistant, caplog: LogCaptureFixture):
-    """Tests bad polyfits."""
-    config = {
-        DOMAIN: {
-            "test": {
-                CONF_SOURCE: "sensor.uncalibrated",
-                CONF_DATAPOINTS: [
-                    [0.0, 1.0],
-                    [0.0, 1.0],
-                ],
-            },
-        }
-    }
-    await async_setup_component(hass, DOMAIN, config)
-    await hass.async_block_till_done()
-    await hass.async_start()
-    await hass.async_block_till_done()
-
-    assert "invalid value encountered in true_divide" in caplog.text
 
 
 async def test_datapoints_greater_than_degree(
