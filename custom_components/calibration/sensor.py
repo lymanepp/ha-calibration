@@ -6,6 +6,7 @@ import logging
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import (
     ATTR_DEVICE_CLASS,
+    ATTR_ICON,
     ATTR_UNIT_OF_MEASUREMENT,
     CONF_ATTRIBUTE,
     CONF_DEVICE_CLASS,
@@ -23,6 +24,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from .const import (
     ATTR_COEFFICIENTS,
     ATTR_SOURCE,
+    ATTR_SOURCE_ATTRIBUTE,
     ATTR_SOURCE_VALUE,
     CONF_CALIBRATION,
     CONF_POLYNOMIAL,
@@ -36,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_platform(
     hass: HomeAssistant,
-    config: ConfigType,  # pylint: disable=unused-argument
+    config: ConfigType,
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
@@ -83,21 +85,25 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
         unit_of_measurement: str,
     ):  # pylint: disable=too-many-arguments
         """Initialize the Calibration sensor."""
+        self._source_entity_id = source
+        self._precision = precision
+        self._source_attribute = attribute
+        self._attr_native_unit_of_measurement = unit_of_measurement
+        self._poly = polynomial
         self._attr_unique_id = unique_id
         self._attr_name = name
-        self._attr_device_class = device_class
-        self._attr_native_unit_of_measurement = unit_of_measurement
         self._attr_should_poll = False
+        self._attr_device_class = device_class
+        self._attr_icon = None
 
-        self._source_entity_id = source
-        self._source_attribute = attribute
-        self._precision = precision
-        self._poly = polynomial
-
-        self._attr_extra_state_attributes = {
+        attrs = {
             ATTR_SOURCE_VALUE: None,
-            ATTR_SOURCE: f"{source}@{attribute}" if attribute else source,
-            ATTR_COEFFICIENTS: polynomial.coefficients.tolist(),
+            ATTR_SOURCE: source,
+            ATTR_SOURCE_ATTRIBUTE: attribute,
+            ATTR_COEFFICIENTS: polynomial.coef.tolist(),
+        }
+        self._attr_extra_state_attributes = {
+            k: v for k, v in attrs.items() if v or k == ATTR_SOURCE_VALUE
         }
 
     async def async_added_to_hass(self) -> None:
@@ -116,14 +122,15 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
         if (new_state := event.data.get("new_state")) is None:
             return
 
-        if self._source_attribute is None:
-            # Initialize on first state change if not configured
-            if self._attr_device_class is None:
-                self._attr_device_class = new_state.attributes.get(ATTR_DEVICE_CLASS)
+        if not self._source_attribute:
             if self._attr_native_unit_of_measurement is None:
                 self._attr_native_unit_of_measurement = new_state.attributes.get(
                     ATTR_UNIT_OF_MEASUREMENT
                 )
+            if self._attr_device_class is None:
+                self._attr_device_class = new_state.attributes.get(ATTR_DEVICE_CLASS)
+            if self._attr_icon is None:
+                self._attr_icon = new_state.attributes.get(ATTR_ICON)
 
         try:
             source_value = (
@@ -134,19 +141,16 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
                 else None
             )
             native_value = round(self._poly(source_value), self._precision)
-        except (ValueError, TypeError) as error:
-            source_value, native_value = None
+        except (ValueError, TypeError):
+            source_value = native_value = None
             if self._source_attribute:
                 _LOGGER.warning(
-                    "%s attribute %s is not a number: %s",
+                    "%s attribute %s is not numerical",
                     self._source_entity_id,
                     self._source_attribute,
-                    error,
                 )
             else:
-                _LOGGER.warning(
-                    "%s state is not a number: %s", self._source_entity_id, error
-                )
+                _LOGGER.warning("%s state is not numerical", self._source_entity_id)
 
         self._attr_extra_state_attributes[ATTR_SOURCE_VALUE] = source_value
         self._attr_native_value = native_value
