@@ -9,7 +9,7 @@ from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     CONF_ATTRIBUTE,
     CONF_DEVICE_CLASS,
-    CONF_FRIENDLY_NAME,
+    CONF_NAME,
     CONF_SOURCE,
     CONF_UNIQUE_ID,
     CONF_UNIT_OF_MEASUREMENT,
@@ -48,7 +48,7 @@ async def async_setup_platform(
     conf = hass.data[DATA_CALIBRATION][calibration]
 
     unique_id = f"{DOMAIN}.{conf.get(CONF_UNIQUE_ID) or calibration}"
-    name = conf.get(CONF_FRIENDLY_NAME) or calibration.replace("_", " ").title()
+    name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
     source = conf[CONF_SOURCE]
     attribute = conf.get(CONF_ATTRIBUTE)
 
@@ -133,10 +133,9 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
                 if new_state.state != STATE_UNKNOWN
                 else None
             )
-            self._attr_native_value = round(self._poly(source_value), self._precision)
-            self._attr_extra_state_attributes[ATTR_SOURCE_VALUE] = source_value
+            native_value = round(self._poly(source_value), self._precision)
         except (ValueError, TypeError) as error:
-            self._attr_native_value = None
+            source_value, native_value = None
             if self._source_attribute:
                 _LOGGER.warning(
                     "%s attribute %s is not a number: %s",
@@ -148,5 +147,8 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
                 _LOGGER.warning(
                     "%s state is not a number: %s", self._source_entity_id, error
                 )
+
+        self._attr_extra_state_attributes[ATTR_SOURCE_VALUE] = source_value
+        self._attr_native_value = native_value
 
         self.async_write_ha_state()
