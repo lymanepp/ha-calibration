@@ -38,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_platform(
     hass: HomeAssistant,
-    config: ConfigType,  # pylint: disable=unused-arg
+    config: ConfigType,  # pylint: disable=unused-argument
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
