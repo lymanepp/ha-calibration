@@ -17,7 +17,9 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_registry import RegistryEntryHider
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, EventType
 
@@ -27,6 +29,7 @@ from .const import (
     ATTR_SOURCE_ATTRIBUTE,
     ATTR_SOURCE_VALUE,
     CONF_CALIBRATION,
+    CONF_HIDE_SOURCE,
     CONF_POLYNOMIAL,
     CONF_PRECISION,
     DATA_CALIBRATION,
@@ -50,15 +53,25 @@ async def async_setup_platform(
     conf = hass.data[DATA_CALIBRATION][calibration]
 
     unique_id = f"{DOMAIN}.{conf.get(CONF_UNIQUE_ID) or calibration}"
+    source = conf[CONF_SOURCE]
+    attribute = conf.get(CONF_ATTRIBUTE)
     name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
+
+    if not attribute and conf.get(CONF_HIDE_SOURCE):
+        registry = entity_registry.async_get(hass)
+        source_entity = registry.async_get(source)
+        if source_entity and not source_entity.hidden:
+            registry.async_update_entity(
+                source, hidden_by=RegistryEntryHider.INTEGRATION
+            )
 
     async_add_entities(
         [
             CalibrationSensor(
                 unique_id,
                 name,
-                conf[CONF_SOURCE],
-                conf.get(CONF_ATTRIBUTE),
+                source,
+                attribute,
                 conf[CONF_PRECISION],
                 conf[CONF_POLYNOMIAL],
                 conf.get(CONF_UNIT_OF_MEASUREMENT),

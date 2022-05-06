@@ -6,6 +6,7 @@ SENSOR = "calibration"
 CONF_CALIBRATION = "calibration"
 CONF_DATAPOINTS = "data_points"
 CONF_DEGREE = "degree"
+CONF_HIDE_SOURCE = "hide_source"
 CONF_PRECISION = "precision"
 CONF_POLYNOMIAL = "polynomial"
 
