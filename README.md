@@ -1,18 +1,40 @@
----
-title: Calibration
-description: Instructions on how to integrate calibration into Home Assistant.
-ha_category:
-  - Utility
-  - Sensor
-ha_iot_class: Calculated
-ha_codeowners:
-  - '@lymanepp'
-ha_domain: calibration
-ha_platforms:
-  - sensor
----
+# [Calibration](https://github.com/lymanepp/ha-calibration)
 
 The Calibration integration consumes the state from other sensors. It exports the calibrated value as state and the following values as attributes: `source_value`, `source`, `source_attribute` and `coefficients`.  A single polynomial, linear by default, is fit to the data points provided.
+
+This is a fork of the Home Assistant Core [compensation](https://www.home-assistant.io/integrations/compensation/) integration created by @petro31. It was forked to add these enhancements:
+1. Provide sane defaults for `unique_id` and `name`.
+2. Allow `device_class` and `unit_of_measurement` to be configured.
+3. Add auto-configuration of `device_class` when `attribute` is not specified. The `compensation` integration already supported that for `unit_of_measurement`.
+4. Allow hiding the `source` from Home Assistant.
+
+#2-4 have been submitted for integration in Home Assistant Core, but backward-compatibility constraints will prevent sane defaults from being integrated upstream.
+
+## Installation
+
+### Using [HACS](https://hacs.xyz/) (recommended)
+
+This integration can be installed using HACS. To do it search for Calibration in the integrations section.
+
+### Manual
+
+To install this integration manually you can either:
+
+* Use git:
+
+```sh
+git clone https://github.com/lymanepp/ha-calibration.git
+cd ha-calibration
+# if you want a specific version checkout its tag
+# e.g. git checkout 1.0.0
+
+# replace $hacs_config_folder with your home assistant config folder path
+cp -r custom_components $hacs_config_folder
+```
+
+* Download the source release and extract the custom_components folder into your home assistant config folder.
+
+Finally, you need to restart Home Assistant before you can use it.
 
 ## Configuration
 
@@ -30,47 +52,33 @@ calibration:
       - [79.89, 75.0]
 ```
 
-{% configuration %}
-source:
-  description: The entity to monitor.
-  required: true
-  type: string
-attribute:
-  description: Attribute to monitor.
-  required: false
-  type: string
-hide_source:
-  description: Hide the source entity in Home Assistant. Cannot be specified with `attribute`.
-  required: false
-  default: false
-  type: boolean
-friendly_name:
-  description: Set the friendly name for the new sensor.
-  required: false
-  default: A prettified version of the configuration section name will be used (`Garage Humidity` in the example).
-  type: string
-device_class:
-  description: Set the device class for the new sensor.
-  required: false
-  default: The device class from the monitored entity will be used (except when `attribute` is specified).
-  type: string
-unit_of_measurement:
-  description: Defines the units of measurement of the sensor, if any.
-  required: false
-  default: The unit of measurement from the source will be used (except when `attribute` is specified).
-  type: string
-data_points:
-  description: "The collection of data point conversions with the format `[uncalibrated_value, calibrated_value]`.  e.g., `[1.0, 2.1]`. The number of required data points is equal to the polynomial `degree` + 1. For example, a linear calibration (with `degree: 1`) requires at least 2 data points."
-  required: true
-  type: list
-degree:
-  description: "The degree of a polynomial. e.g., Linear calibration (y = x + 3) has 1 degree, Quadratic calibration (y = x<sup>2</sup> + x + 3) has 2 degrees, etc."
-  required: false
-  default: 1
-  type: integer
-precision:
-  description: Defines the precision of the calculated values.
-  required: false
-  default: 2
-  type: integer
-{% endconfiguration %}
+## Options
+
+<dl>
+  <dt><strong>source</strong> <code>string</code> <code>(required)</code></dt>
+  <dd>The entity to monitor.</dd>
+
+  <dt><strong>attribute</strong> <code>string</code> <code>(optional)</code></dt>
+  <dd>The source attribute to monitor.</dd>
+
+  <dt><strong>hide_source</strong> <code>boolean</code> <code>(optional, default: false)</code></dt>
+  <dd>Hide the source entity in Home Assistant. Cannot be specified with <code>attribute</code>.</dd>
+
+  <dt><strong>name</strong> <code>string</code> <code>(optional)</code></dt>
+  <dd>Set the name for the new sensor. By default, a prettified version of the configuration section name will be used (<strong>Garage Humidity</strong> in the example).</dd>
+
+  <dt><strong>device_class</strong> <code>string</code> <code>(optional, default: from source)</code></dt>
+  <dd>Set the device class for the new sensor. By default, the device class from the monitored entity will be used (except when <code>attribute</code> is specified).</dd>
+
+  <dt><strong>unit_of_measurement</strong> <code>string</code> <code>(optional, default: from source)</code></dt>
+  <dd>Defines the units of measurement of the sensor, if any. By default, the unit of measurement from the source will be used (except when <code>attribute</code> is specified).</dd>
+
+  <dt><strong>data_points</strong> <code>list</code> <code>(required)</code></dt>
+  <dd>The collection of data point conversions with the format <code>[uncalibrated_value, calibrated_value]</code>.  e.g., <code>[38.68, 32.0]</code>. The number of required data points is equal to the polynomial <code>degree</code> + 1. For example, a linear calibration (with <code>degree: 1</code>) requires at least 2 data points.</dd>
+
+  <dt><strong>degree</strong> <code>integer</code> <code>(optional, default: 1)</code></dt>
+  <dd>The degree of a polynomial. e.g., Linear calibration (y = x + 3) has 1 degree, Quadratic calibration (y = x<sup>2</sup> + x + 3) has 2 degrees, etc.</dd>
+
+  <dt><strong>precision</strong> <code>integer</code> <code>(optional, default: 2)</code></dt>
+  <dd>Defines the precision of the calculated values.</dd>
+</dl>
