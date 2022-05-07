@@ -4,7 +4,7 @@ The Calibration integration consumes the state from other sensors. It exports th
 
 This is a fork of the Home Assistant Core [compensation](https://www.home-assistant.io/integrations/compensation/) integration created by [@petro31](https://github.com/petro31). It was forked to add these enhancements:
 1. Provide sane defaults for `unique_id` and `name`.
-2. Allow `device_class` and `unit_of_measurement` to be configured.
+2. Allow `device_class` and `unit_of_measurement` to be configured. This is especially useful when `attribute` is specified.
 3. Add auto-configuration of `device_class` when `attribute` is not specified. The `compensation` integration already supported that for `unit_of_measurement`.
 4. Allow hiding the `source` from Home Assistant.
 
