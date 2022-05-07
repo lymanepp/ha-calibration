@@ -39,16 +39,16 @@ attribute:
   description: Attribute to monitor.
   required: false
   type: string
-friendly_name:
-  description: Set the friendly name for the new sensor.
-  required: false
-  default: A prettified version of the configuration section name will be used (`Garage Humidity` in the example).
-  type: string
 hide_source:
   description: Hide the source entity in Home Assistant. Cannot be specified with `attribute`.
   required: false
   default: false
   type: boolean
+friendly_name:
+  description: Set the friendly name for the new sensor.
+  required: false
+  default: A prettified version of the configuration section name will be used (`Garage Humidity` in the example).
+  type: string
 device_class:
   description: Set the device class for the new sensor.
   required: false
