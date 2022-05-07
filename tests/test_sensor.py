@@ -246,7 +246,7 @@ async def test_hide_source(hass):
     assert source.hidden_by == RegistryEntryHider.INTEGRATION
 
 
-async def test_attr_hide_exclusive(hass):
+async def test_attr_hide_exclusive():
     """Test compensation sensor state."""
     config = {
         DOMAIN: {
@@ -268,3 +268,25 @@ async def test_attr_hide_exclusive(hass):
         MultipleInvalid, match="two or more values in the same group of exclusion"
     ):
         CONFIG_SCHEMA(config)
+
+
+async def test_invalid_config(hass: HomeAssistant, caplog: LogCaptureFixture):
+    """Test calibration sensor state."""
+    config = {
+        DOMAIN: {
+            "test": {
+                CONF_SOURCE: "sensor.uncalibrated",
+                CONF_DATAPOINTS: [
+                    [1.0, 2.0],
+                    [2.0, "a"],
+                ],
+                CONF_PRECISION: 2,
+                CONF_UNIT_OF_MEASUREMENT: "a",
+            }
+        }
+    }
+    assert not await async_setup_component(hass, DOMAIN, config)
+    assert (
+        "expected float @ data['calibration']['test']['data_points'][1]. Got [2.0, 'a']."
+        in caplog.text
+    )

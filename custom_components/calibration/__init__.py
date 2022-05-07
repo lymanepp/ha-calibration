@@ -1,7 +1,6 @@
 """The Calibration integration."""
 import logging
 
-import numpy as np
 import voluptuous as vol
 from homeassistant.components.sensor import DEVICE_CLASSES_SCHEMA
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
@@ -86,33 +85,22 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         x_values, y_values = zip(*conf[CONF_DATAPOINTS])
 
         # try to get valid coefficients for a polynomial
-        polynomial = None
-        with np.errstate(all="raise"):
-            try:
-                polynomial = Polynomial.fit(x_values, y_values, degree, domain=[])
-            except FloatingPointError as error:
-                _LOGGER.error(
-                    "Setup of %s encountered an error, %s",
-                    calibration,
-                    error,
-                )
+        polynomial = Polynomial.fit(x_values, y_values, degree, domain=[])
+        data = {
+            k: v for k, v in conf.items() if k not in [CONF_DEGREE, CONF_DATAPOINTS]
+        }
+        data[CONF_POLYNOMIAL] = polynomial
 
-        if polynomial is not None:
-            data = {
-                k: v for k, v in conf.items() if k not in [CONF_DEGREE, CONF_DATAPOINTS]
-            }
-            data[CONF_POLYNOMIAL] = polynomial
+        hass.data[DATA_CALIBRATION][calibration] = data
 
-            hass.data[DATA_CALIBRATION][calibration] = data
-
-            hass.async_create_task(
-                async_load_platform(
-                    hass,
-                    SENSOR_DOMAIN,
-                    DOMAIN,
-                    {CONF_CALIBRATION: calibration},
-                    config,
-                )
+        hass.async_create_task(
+            async_load_platform(
+                hass,
+                SENSOR_DOMAIN,
+                DOMAIN,
+                {CONF_CALIBRATION: calibration},
+                config,
             )
+        )
 
     return True
