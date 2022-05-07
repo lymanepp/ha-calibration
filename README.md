@@ -2,7 +2,7 @@
 
 The Calibration integration consumes the state from other sensors. It exports the calibrated value as state and the following values as attributes: `source_value`, `source`, `source_attribute` and `coefficients`.  A single polynomial, linear by default, is fit to the data points provided.
 
-This is a fork of the Home Assistant Core [compensation](https://www.home-assistant.io/integrations/compensation/) integration created by @petro31. It was forked to add these enhancements:
+This is a fork of the Home Assistant Core [compensation](https://www.home-assistant.io/integrations/compensation/) integration created by [@petro31](https://github.com/petro31). It was forked to add these enhancements:
 1. Provide sane defaults for `unique_id` and `name`.
 2. Allow `device_class` and `unit_of_measurement` to be configured.
 3. Add auto-configuration of `device_class` when `attribute` is not specified. The `compensation` integration already supported that for `unit_of_measurement`.
