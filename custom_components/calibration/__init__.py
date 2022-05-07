@@ -10,7 +10,6 @@ from homeassistant.const import (
     CONF_DEVICE_CLASS,
     CONF_NAME,
     CONF_SOURCE,
-    CONF_UNIQUE_ID,
     CONF_UNIT_OF_MEASUREMENT,
 )
 from homeassistant.core import HomeAssistant
@@ -51,8 +50,7 @@ CALIBRATION_SCHEMA = vol.Schema(
         vol.Required(CONF_DATAPOINTS): [
             vol.ExactSequence([vol.Coerce(float), vol.Coerce(float)])
         ],
-        vol.Optional(CONF_UNIQUE_ID): cv.string,
-        vol.Exclusive(CONF_ATTRIBUTE, "attr"): cv.string,
+        vol.Exclusive(CONF_ATTRIBUTE, "attr_hide"): cv.string,
         vol.Optional(CONF_PRECISION, default=DEFAULT_PRECISION): cv.positive_int,
         vol.Optional(CONF_DEGREE, default=DEFAULT_DEGREE): vol.All(
             vol.Coerce(int),
@@ -61,7 +59,7 @@ CALIBRATION_SCHEMA = vol.Schema(
         vol.Optional(CONF_NAME): cv.string,
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string,
-        vol.Exclusive(CONF_HIDE_SOURCE, "attr"): cv.boolean,
+        vol.Exclusive(CONF_HIDE_SOURCE, "attr_hide"): cv.boolean,
     }
 )
 

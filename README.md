@@ -1,11 +1,10 @@
 ---
 title: Calibration
-description: Instructions on how to integrate calibration sensors into Home Assistant.
+description: Instructions on how to integrate calibration into Home Assistant.
 ha_category:
   - Utility
   - Sensor
 ha_iot_class: Calculated
-ha_release: '2021.5'
 ha_codeowners:
   - '@lymanepp'
 ha_domain: calibration
@@ -13,36 +12,28 @@ ha_platforms:
   - sensor
 ---
 
-The Calibration integration consumes the state from other sensors. It exports the calibrated value as state and the following values as attributes: `entity_id` and `coefficients`.  A single polynomial, linear by default, is fit to all data points provided.
+The Calibration integration consumes the state from other sensors. It exports the calibrated value as state and the following values as attributes: `source_value`, `source`, `source_attribute` and `coefficients`.  A single polynomial, linear by default, is fit to the data points provided.
 
 ## Configuration
 
-To enable the calibration sensor, add the following lines to your `configuration.yaml`:
+To enable the calibration integration, add the following lines to your `configuration.yaml`:
 
 ```yaml
 # Example configuration.yaml entry
 calibration:
-  media_player_db_volume:
-    source: media_player.yamaha_receiver
-    attribute: volume_level
-    unit_of_measurement: dB
+  garage_humidity:
+    source: sensor.garage_humidity_uncalibrated
+    degree: 1
+    hide_source: true
     data_points:
-      - [0.2, -80.0]
-      - [1.0, 0.0]
+      - [38.68, 32.0]
+      - [79.89, 75.0]
 ```
 
 {% configuration %}
 source:
   description: The entity to monitor.
   required: true
-  type: string
-data_points:
-  description: "The collection of data point conversions with the format `[uncalibrated_value, calibrated_value]`.  e.g., `[1.0, 2.1]`. The number of required data points is equal to the polynomial `degree` + 1. For example, a linear calibration (with `degree: 1`) requires at least 2 data points."
-  required: true
-  type: list
-unique_id:
-  description: An ID that uniquely identifies this sensor. Set this to a unique value to allow customization through the UI.
-  required: false
   type: string
 attribute:
   description: Attribute to monitor.
@@ -51,23 +42,35 @@ attribute:
 friendly_name:
   description: Set the friendly name for the new sensor.
   required: false
+  default: A prettified version of the configuration section name will be used (`Garage Humidity` in the example).
   type: string
-device_class:
-  description: Set the device class for the new sensor. By default, the device class from the monitored entity will be used (except for attributes).
+hide_source:
+  description: Hide the source entity in Home Assistant. Cannot be specified with `attribute`.
   required: false
+  default: false
+  type: boolean
+device_class:
+  description: Set the device class for the new sensor.
+  required: false
+  default: The device class from the monitored entity will be used (except when `attribute` is specified).
   type: string
+unit_of_measurement:
+  description: Defines the units of measurement of the sensor, if any.
+  required: false
+  default: The unit of measurement from the source will be used (except when `attribute` is specified).
+  type: string
+data_points:
+  description: "The collection of data point conversions with the format `[uncalibrated_value, calibrated_value]`.  e.g., `[1.0, 2.1]`. The number of required data points is equal to the polynomial `degree` + 1. For example, a linear calibration (with `degree: 1`) requires at least 2 data points."
+  required: true
+  type: list
 degree:
   description: "The degree of a polynomial. e.g., Linear calibration (y = x + 3) has 1 degree, Quadratic calibration (y = x<sup>2</sup> + x + 3) has 2 degrees, etc."
   required: false
   default: 1
   type: integer
 precision:
-  description: Defines the precision of the calculated values, through the argument of round().
+  description: Defines the precision of the calculated values.
   required: false
   default: 2
   type: integer
-unit_of_measurement:
-  description: Defines the units of measurement of the sensor, if any. By default, the units of measurement from the monitored entity will be used (except for attributes).
-  required: false
-  type: string
 {% endconfiguration %}

@@ -1,4 +1,7 @@
 """The tests for the integration sensor platform."""
+import pytest
+from voluptuous.error import MultipleInvalid
+
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
@@ -14,6 +17,7 @@ from homeassistant.setup import async_setup_component
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity_registry import RegistryEntryHider
 from pytest import LogCaptureFixture
+from custom_components.calibration import CONFIG_SCHEMA
 
 from custom_components.calibration.const import (
     CONF_DATAPOINTS,
@@ -240,3 +244,27 @@ async def test_hide_source(hass):
 
     source = registry.async_get(source.entity_id)
     assert source.hidden_by == RegistryEntryHider.INTEGRATION
+
+
+async def test_attr_hide_exclusive(hass):
+    """Test compensation sensor state."""
+    config = {
+        DOMAIN: {
+            "test": {
+                "source": "sensor.uncompensated",
+                "attribute": "value",
+                "hide_source": True,
+                "data_points": [
+                    [1.0, 2.0],
+                    [2.0, 3.0],
+                ],
+                "precision": 2,
+                "unit_of_measurement": "a",
+            }
+        }
+    }
+
+    with pytest.raises(
+        MultipleInvalid, match="two or more values in the same group of exclusion"
+    ):
+        CONFIG_SCHEMA(config)

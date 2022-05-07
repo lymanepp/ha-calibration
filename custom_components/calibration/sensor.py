@@ -12,7 +12,6 @@ from homeassistant.const import (
     CONF_DEVICE_CLASS,
     CONF_NAME,
     CONF_SOURCE,
-    CONF_UNIQUE_ID,
     CONF_UNIT_OF_MEASUREMENT,
     STATE_UNKNOWN,
 )
@@ -52,7 +51,7 @@ async def async_setup_platform(
     calibration = discovery_info[CONF_CALIBRATION]
     conf = hass.data[DATA_CALIBRATION][calibration]
 
-    unique_id = f"{DOMAIN}.{conf.get(CONF_UNIQUE_ID) or calibration}"
+    unique_id = f"{DOMAIN}.{calibration}"
     source = conf[CONF_SOURCE]
     attribute = conf.get(CONF_ATTRIBUTE)
     name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
