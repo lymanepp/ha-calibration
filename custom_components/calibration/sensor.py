@@ -38,7 +38,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(
+async def async_setup_platform(  # pylint: disable=too-many-locals
     hass: HomeAssistant,
     config: ConfigType,  # pylint: disable=unused-argument
     async_add_entities: AddEntitiesCallback,
