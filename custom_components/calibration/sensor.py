@@ -55,14 +55,18 @@ async def async_setup_platform(
     source = conf[CONF_SOURCE]
     attribute = conf.get(CONF_ATTRIBUTE)
     name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
+    unit_of_measurement = conf.get(CONF_UNIT_OF_MEASUREMENT)
+    device_class = conf.get(CONF_DEVICE_CLASS)
 
-    if not attribute and conf.get(CONF_HIDE_SOURCE):
-        registry = entity_registry.async_get(hass)
-        source_entity = registry.async_get(source)
-        if source_entity and not source_entity.hidden:
-            registry.async_update_entity(
-                source, hidden_by=RegistryEntryHider.INTEGRATION
-            )
+    if not attribute:
+        ent_reg = entity_registry.async_get(hass)
+        if source_ent := ent_reg.async_get(source):
+            if conf.get(CONF_HIDE_SOURCE) and not source_ent.hidden:
+                ent_reg.async_update_entity(
+                    source, hidden_by=RegistryEntryHider.INTEGRATION
+                )
+            unit_of_measurement = unit_of_measurement or source_ent.unit_of_measurement
+            device_class = device_class or source_ent.unit_of_measurement
 
     async_add_entities(
         [
@@ -73,8 +77,8 @@ async def async_setup_platform(
                 attribute,
                 conf[CONF_PRECISION],
                 conf[CONF_POLYNOMIAL],
-                conf.get(CONF_UNIT_OF_MEASUREMENT),
-                conf.get(CONF_DEVICE_CLASS),
+                unit_of_measurement,
+                device_class,
             )
         ]
     )
