@@ -52,9 +52,9 @@ async def async_setup_platform(
     conf = hass.data[DATA_CALIBRATION][calibration]
 
     unique_id = f"{DOMAIN}.{calibration}"
+    name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
     source = conf[CONF_SOURCE]
     attribute = conf.get(CONF_ATTRIBUTE)
-    name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
     unit_of_measurement = conf.get(CONF_UNIT_OF_MEASUREMENT)
     device_class = conf.get(CONF_DEVICE_CLASS)
 
