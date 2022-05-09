@@ -15,10 +15,10 @@ from homeassistant.const import (
     CONF_UNIT_OF_MEASUREMENT,
     STATE_UNKNOWN,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, State, callback
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.entity_registry import RegistryEntryHider
+from homeassistant.helpers.entity_registry import RegistryEntry, RegistryEntryHider
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, EventType
 
@@ -54,19 +54,28 @@ async def async_setup_platform(
     unique_id = f"{DOMAIN}.{calibration}"
     name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
     source = conf[CONF_SOURCE]
-    attribute = conf.get(CONF_ATTRIBUTE)
     unit_of_measurement = conf.get(CONF_UNIT_OF_MEASUREMENT)
     device_class = conf.get(CONF_DEVICE_CLASS)
 
-    if not attribute:
+    if not (attribute := conf.get(CONF_ATTRIBUTE)):
         ent_reg = entity_registry.async_get(hass)
-        if source_ent := ent_reg.async_get(source):
-            if conf.get(CONF_HIDE_SOURCE) and not source_ent.hidden:
-                ent_reg.async_update_entity(
-                    source, hidden_by=RegistryEntryHider.INTEGRATION
-                )
-            unit_of_measurement = unit_of_measurement or source_ent.unit_of_measurement
-            device_class = device_class or source_ent.unit_of_measurement
+        source_state: State | None = hass.states.get(source)
+        source_entity: RegistryEntry | None = ent_reg.async_get(source)
+
+        if conf.get(CONF_HIDE_SOURCE) and source_entity and not source_entity.hidden:
+            ent_reg.async_update_entity(
+                source, hidden_by=RegistryEntryHider.INTEGRATION
+            )
+
+        def get_value(attr: str):
+            if source_state and (unit := source_state.attributes.get(attr)):
+                return unit
+            if source_entity and (unit := getattr(source_entity, attr)):
+                return unit
+            return None
+
+        unit_of_measurement = unit_of_measurement or get_value(ATTR_UNIT_OF_MEASUREMENT)
+        device_class = device_class or get_value(ATTR_DEVICE_CLASS)
 
     async_add_entities(
         [
