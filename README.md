@@ -62,10 +62,10 @@ calibration:
   <dd>The source attribute to monitor.</dd>
 
   <dt><strong>hide_source</strong> <code>boolean</code> <code>(optional, default: false)</code></dt>
-  <dd>Hide the source entity in Home Assistant. Cannot be specified with <code>attribute</code>.</dd>
+  <dd>Hide the source entity in Home Assistant. If specified with <code>attribute</code>, it will hide the <code>source</code> entity as attributes cannot be hidden.</dd>
 
   <dt><strong>name</strong> <code>string</code> <code>(optional)</code></dt>
-  <dd>Set the name for the new sensor. By default, a prettified version of the configuration section name will be used (<strong>Garage Humidity</strong> in the example).</dd>
+  <dd>Set the name for the new sensor. By default, a human-readable version of the configuration section name will be used (<strong>Garage Humidity</strong> in the example).</dd>
 
   <dt><strong>device_class</strong> <code>string</code> <code>(optional, default: from source)</code></dt>
   <dd>Set the device class for the new sensor. By default, the device class from the monitored entity will be used (except when <code>attribute</code> is specified).</dd>
