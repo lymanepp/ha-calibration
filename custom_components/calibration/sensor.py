@@ -54,18 +54,15 @@ async def async_setup_platform(  # pylint: disable=too-many-locals
     unique_id = f"{DOMAIN}.{calibration}"
     name = conf.get(CONF_NAME) or calibration.replace("_", " ").title()
     source = conf[CONF_SOURCE]
+
     unit_of_measurement = conf.get(CONF_UNIT_OF_MEASUREMENT)
     device_class = conf.get(CONF_DEVICE_CLASS)
 
-    if not (attribute := conf.get(CONF_ATTRIBUTE)):
-        ent_reg = entity_registry.async_get(hass)
-        source_state: State | None = hass.states.get(source)
-        source_entity: RegistryEntry | None = ent_reg.async_get(source)
+    ent_reg = entity_registry.async_get(hass)
+    source_entity: RegistryEntry | None = ent_reg.async_get(source)
+    source_state: State | None = hass.states.get(source)
 
-        if conf.get(CONF_HIDE_SOURCE) and source_entity and not source_entity.hidden:
-            ent_reg.async_update_entity(
-                source, hidden_by=RegistryEntryHider.INTEGRATION
-            )
+    if not (attribute := conf.get(CONF_ATTRIBUTE)):
 
         def get_value(attr: str):
             if source_state and (unit := source_state.attributes.get(attr)):
@@ -76,6 +73,9 @@ async def async_setup_platform(  # pylint: disable=too-many-locals
 
         unit_of_measurement = unit_of_measurement or get_value(ATTR_UNIT_OF_MEASUREMENT)
         device_class = device_class or get_value(ATTR_DEVICE_CLASS)
+
+    if conf.get(CONF_HIDE_SOURCE) and source_entity and not source_entity.hidden:
+        ent_reg.async_update_entity(source, hidden_by=RegistryEntryHider.INTEGRATION)
 
     async_add_entities(
         [
