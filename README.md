@@ -54,31 +54,29 @@ calibration:
 
 ## Options
 
-<dl>
-  <dt><strong>source</strong> <code>string</code> <code>(required)</code></dt>
-  <dd>The entity to monitor.</dd>
+***source** `string` `(required)`*
+> The entity to monitor.
 
-  <dt><strong>attribute</strong> <code>string</code> <code>(optional)</code></dt>
-  <dd>The source attribute to monitor.</dd>
+***attribute** `string` `(optional)`*
+> The source attribute to monitor.
 
-  <dt><strong>hide_source</strong> <code>boolean</code> <code>(optional, default: false)</code></dt>
-  <dd>Hide the source entity in Home Assistant. If specified with <code>attribute</code>, it will hide the <code>source</code> entity as attributes cannot be hidden individually.</dd>
+***hide_source** `boolean` `(optional, default: false)`*
+> Hide the source entity in Home Assistant. If specified with `attribute`, it will hide the `source` entity as attributes cannot be hidden individually.
 
-  <dt><strong>name</strong> <code>string</code> <code>(optional)</code></dt>
-  <dd>Set the name for the new sensor. By default, a human-readable version of the configuration section name will be used (<strong>Garage Humidity</strong> in the example).</dd>
+***name** `string` `(optional)`*
+> Set the name for the new sensor. By default, a human-readable version of the configuration section name will be used (**Garage Humidity** in the example).
 
-  <dt><strong>device_class</strong> <code>string</code> <code>(optional, default: from source)</code></dt>
-  <dd>Set the device class for the new sensor. By default, the device class from the monitored entity will be used (except when <code>attribute</code> is specified). A list of device classes is available <a href="https://www.home-assistant.io/integrations/sensor">here</a>.</dd>
+***device_class** `boolean` `(optional, default: from source)`*
+> Set the device class for the new sensor. By default, the device class from the monitored entity will be used (except when `attribute` is specified). A list of device classes is available [here](https://www.home-assistant.io/integrations/sensor).
 
-  <dt><strong>unit_of_measurement</strong> <code>string</code> <code>(optional, default: from source)</code></dt>
-  <dd>Defines the units of measurement of the sensor, if any. By default, the unit of measurement from the source will be used (except when <code>attribute</code> is specified).</dd>
+***unit_of_measurement** `boolean` `(optional, default: from source)`*
+> Defines the units of measurement of the sensor, if any. By default, the unit of measurement from the source will be used (except when `attribute` is specified).
 
-  <dt><strong>data_points</strong> <code>list</code> <code>(required)</code></dt>
-  <dd>The collection of data point conversions with the format <code>[uncalibrated_value, calibrated_value]</code>.  e.g., <code>[38.68, 32.0]</code>. The number of required data points is equal to the polynomial <code>degree</code> + 1. For example, a linear calibration (with <code>degree: 1</code>) requires at least 2 data points.</dd>
+***data_points** `list` `(required)`*
+> The collection of data point conversions with the format `[uncalibrated_value, calibrated_value]`. e.g., `[38.68, 32.0]`. The number of required data points is equal to the polynomial `degree` + 1. For example, a linear calibration (with `degree: 1`) requires at least 2 data points.
 
-  <dt><strong>degree</strong> <code>integer</code> <code>(optional, default: 1)</code></dt>
-  <dd>The degree of a polynomial. e.g., Linear calibration (y = x + 3) has 1 degree, Quadratic calibration (y = x<sup>2</sup> + x + 3) has 2 degrees, etc.</dd>
+***degree** `integer` `(optional, default=1)`*
+> The degree of a polynomial. e.g., Linear calibration (y = x + 3) has 1 degree, Quadratic calibration (y = x2 + x + 3) has 2 degrees, etc.
 
-  <dt><strong>precision</strong> <code>integer</code> <code>(optional, default: 2)</code></dt>
-  <dd>Defines the precision of the calculated values.</dd>
-</dl>
+***precision** `integer` `(optional, default=2)`*
+> Defines the precision of the calculated values.
