@@ -2,8 +2,5 @@
     "name": "Sensor Calibration",
     "content_in_root": false,
     "render_readme": true,
-    "domains": [
-        "sensor"
-    ],
-    "iot_class": "Calculated"
+    "homeassistant": "2022.7.0"
 }
