@@ -13,6 +13,7 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_SOURCE,
     CONF_UNIT_OF_MEASUREMENT,
+    STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
 from homeassistant.core import HomeAssistant, State, callback
@@ -132,6 +133,9 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
 
     async def async_added_to_hass(self) -> None:
         """Handle added to Hass."""
+        if (state := self.hass.states.get(self._source_entity_id)) is not None:
+            self._update_state(state)
+
         self.async_on_remove(
             async_track_state_change_event(
                 self.hass,
@@ -143,27 +147,34 @@ class CalibrationSensor(SensorEntity):  # pylint: disable=too-many-instance-attr
     @callback
     def _async_calibration_sensor_state_listener(self, event: EventType) -> None:
         """Handle sensor state changes."""
-        if (new_state := event.data.get("new_state")) is None:
-            return
+        if (new_state := event.data.get("new_state")) is not None:
+            self._update_state(new_state)
+
+    def _update_state(self, state: State) -> None:
+        source_value = (
+            state.attributes.get(self._source_attribute)
+            if self._source_attribute
+            else state.state
+            if state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN)
+            else None
+        )
+
+        _LOGGER.debug(
+            "CalibrationSensor(%s) received update: %s", self.name, source_value
+        )
 
         if not self._source_attribute:
             if self._attr_native_unit_of_measurement is None:
-                self._attr_native_unit_of_measurement = new_state.attributes.get(
+                self._attr_native_unit_of_measurement = state.attributes.get(
                     ATTR_UNIT_OF_MEASUREMENT
                 )
             if self._attr_device_class is None:
-                self._attr_device_class = new_state.attributes.get(ATTR_DEVICE_CLASS)
+                self._attr_device_class = state.attributes.get(ATTR_DEVICE_CLASS)
             if self._attr_icon is None:
-                self._attr_icon = new_state.attributes.get(ATTR_ICON)
+                self._attr_icon = state.attributes.get(ATTR_ICON)
 
         try:
-            source_value = (
-                float(new_state.attributes.get(self._source_attribute))
-                if self._source_attribute
-                else float(new_state.state)
-                if new_state.state != STATE_UNKNOWN
-                else None
-            )
+            source_value = float(source_value)
             native_value = round(self._poly(source_value), self._precision)
         except (ValueError, TypeError):
             source_value = native_value = None
