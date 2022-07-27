@@ -5,7 +5,7 @@
   "issue_tracker": "https://github.com/lymanepp/ha-calibration/issues",
   "version": "0.1.0",
   "requirements": [
-    "numpy==1.21.4"
+    "numpy>=1.23.0"
   ],
   "codeowners": [
     "@lymanepp"
